@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-"""DSGBG 及 6 种对比粒球生成算法的论文实现（纯算法版）
-
-- 全量距离计算，无采样近似、无 KDTree/分块等工程优化
+"""DSGBG 及 6 种对比粒球生成算法的代码实现
 - 每个 fit 返回 (centers, radii, labels, ball_sizes)，ball_sizes 为各粒球指派的样本数
-
 算法清单：
   1. fit_dsgbg      DSGBG（本文方法）
   2. fit_scorgbg    ScOrGBC
@@ -28,7 +25,6 @@ def gbknn_predict(X, centers, radii, ball_labels, ball_sizes=None):
     D = np.linalg.norm(X[:, None, :] - centers[None, :, :], axis=2)
     return ball_labels[np.argmin(D - radii, axis=1)]
 
-
 def gbknnpp_predict(X, centers, radii, ball_labels, ball_sizes):
     """GBKNN++：以球内样本数占比作为球面距离的权重"""
     if len(centers) == 0:
@@ -36,7 +32,6 @@ def gbknnpp_predict(X, centers, radii, ball_labels, ball_sizes):
     sw = ball_sizes / max(np.sum(ball_sizes), 1)
     D = np.linalg.norm(X[:, None, :] - centers[None, :, :], axis=2)
     return ball_labels[np.argmin(D - sw, axis=1)]
-
 
 def igbknn_predict(X, centers, radii, ball_labels, ball_sizes):
     """IGBKNN：球内按多数类投票，球外按球面距离最近；球内冲突时取密度(样本数/半径)最大的球"""
@@ -57,15 +52,13 @@ def igbknn_predict(X, centers, radii, ball_labels, ball_sizes):
             yp[i] = ball_labels[in_i[np.argmax(density[in_i])]]
     return yp
 
-
 # ---------------------------------------------------------------------------
 # 1. DSGBG：基于双尺度截断距离与类间分离度感知的粒球生成（本文方法）
 # ---------------------------------------------------------------------------
 
 def fit_dsgbg(Xtr, ytr, sig_coef=5.0, pct_slope=15.0):
-    """DSGBG。返回 (centers, radii, labels, ball_sizes)。
-
-    sig_coef / pct_slope 为设计阶段确定的固定常数（论文已验证其取值不敏感）。
+    """DSGBG返回 (centers, radii, labels, ball_sizes)。
+    sig_coef / pct_slope 为设计阶段确定的固定常数。
     """
     X = Xtr.astype(np.float64)
     y = ytr.astype(np.int64)
@@ -77,7 +70,7 @@ def fit_dsgbg(Xtr, ytr, sig_coef=5.0, pct_slope=15.0):
         Xc = X[y == c]
         if len(Xc) > 1:
             Dc = np.linalg.norm(Xc[:, None, :] - Xc[None, :, :], axis=2)
-            intra.append(Dc[np.triu_indices(len(Xc), k=1)].mean())   # 类内样本对距离的均值（上三角，不含对角）
+            intra.append(Dc[np.triu_indices(len(Xc), k=1)].mean())   # 类内样本对距离的均值
     intra_d = np.mean(intra) if intra else 0.0
 
     inter = []
@@ -240,7 +233,6 @@ def fit_dsgbg(Xtr, ytr, sig_coef=5.0, pct_slope=15.0):
 
     return centers, radii, bl, sizes
 
-
 # ---------------------------------------------------------------------------
 # 2. ScOrGBC：基于 K-means 的稳定中心与最优半径
 # ---------------------------------------------------------------------------
@@ -259,7 +251,6 @@ def _kmeans_pp(X_sc, k):
         min_D2 = np.minimum(min_D2, d2_new)
     return np.array(cents)
 
-
 def _kmeans_cluster(X_sc, cents, max_iter=10):
     """K-means 迭代至中心收敛"""
     for _ in range(max_iter):
@@ -273,7 +264,6 @@ def _kmeans_cluster(X_sc, cents, max_iter=10):
             break
         cents = new_c
     return cents, labels_k
-
 
 def _eliminate_overlap(GBS, epsilon=1e-6, max_iter=200):
     """异类粒球重叠压缩：压缩量按半径正比分配"""
@@ -301,7 +291,6 @@ def _eliminate_overlap(GBS, epsilon=1e-6, max_iter=200):
         GBS[i][1] = radii_ol[i]
     return GBS
 
-
 def _optimize_radii(GBS, X_sc, y_sc, labels_km, beta=1.0, n_candidates=21):
     """合理粒度原则优化半径：最大化 覆盖率×exp(-β·r)"""
     for i in range(len(GBS)):
@@ -324,9 +313,8 @@ def _optimize_radii(GBS, X_sc, y_sc, labels_km, beta=1.0, n_candidates=21):
         GBS[i][1] = best_r
     return GBS
 
-
 def fit_scorgbg(Xtr, ytr, t=1.0, beta=1.0):
-    """ScOrGBC。t 为球数缩放系数，β 为粒度权重（论文中网格搜索确定）"""
+    """ScOrGBC。t 为球数缩放系数，β 为粒度权重（网格搜索确定）"""
     X = np.asarray(Xtr)
     y = np.asarray(ytr)
     n_samples = X.shape[0]
@@ -349,18 +337,17 @@ def fit_scorgbg(Xtr, ytr, t=1.0, beta=1.0):
     return (np.array([g[0] for g in GBS]), np.array([g[1] for g in GBS]),
             np.array([g[2] for g in GBS]), sizes)
 
-
 # ---------------------------------------------------------------------------
 # 3. LDGBG：基于局部密度的粒球生成
 # ---------------------------------------------------------------------------
 
 def fit_ldgbg(Xtr, ytr, g=1.0):
-    """LDGBG。g 为粒度系数（论文中逐数据集搜索），邻域半径 δ = g·dc"""
+    """LDGBG。g 为粒度系数（逐数据集搜索），邻域半径 δ = g·dc"""
     X = Xtr.astype(np.float64)
     y = ytr.astype(np.int64)
     cl = np.unique(y)
     sparsity = len(X) / max(X.shape[1], 1)
-    is_sparse = sparsity < 40          # LDGBG 原论文的稀疏度阈值
+    is_sparse = sparsity < 40          # LDGBG 的稀疏度阈值
 
     all_c, al, ad, all_dens = [], [], [], []
 
@@ -447,13 +434,12 @@ def fit_ldgbg(Xtr, ytr, g=1.0):
     sizes = np.array([np.sum(ass == j) for j in range(K)])
     return centers, radii, bl, sizes
 
-
 # ---------------------------------------------------------------------------
 # 4. ORIGBG：纯度阈值驱动的 2-means 递归分裂
 # ---------------------------------------------------------------------------
 
 def fit_origb(Xtr, ytr, T=1.0):
-    """ORIGBG。T 为纯度阈值（论文中取 1.0）"""
+    """ORIGBG。T 为纯度阈值（取 1.0）"""
     from sklearn.cluster import KMeans
     X = np.asarray(Xtr, dtype=np.float64)
     y = np.asarray(ytr, dtype=np.int64)
@@ -483,7 +469,7 @@ def fit_origb(Xtr, ytr, T=1.0):
             if _purity(yb) >= T or len(np.unique(yb)) < 2:
                 nb.append(idx)
                 continue
-            if np.unique(Xb, axis=0).shape[0] < 2:   # 子球内坐标全同：无法分裂，保持为叶
+            if np.unique(Xb, axis=0).shape[0] < 2:   
                 nb.append(idx)
                 continue
             km = KMeans(n_clusters=2, n_init=1, init='random', random_state=42)
@@ -503,7 +489,6 @@ def fit_origb(Xtr, ytr, T=1.0):
     sizes = np.array([len(idx) for idx in balls if len(idx) > 0])
     return (np.array([r[0] for r in result]), np.array([r[1] for r in result]),
             np.array([r[2] for r in result]), sizes)
-
 
 # ---------------------------------------------------------------------------
 # 5. ACCGBG：K-division 加速 + 全局划分
@@ -600,7 +585,6 @@ def fit_accgbg(Xtr, ytr, T=1.0):
     return (np.array([f[0] for f in final]), np.array([f[1] for f in final]),
             np.array([f[2] for f in final]), sizes[:len(final)])
 
-
 # ---------------------------------------------------------------------------
 # 6. ADPGBG：基于最短异类距离的自适应粒球生成
 # ---------------------------------------------------------------------------
@@ -612,9 +596,8 @@ def _center_radius(Xs):
     r = np.mean(np.linalg.norm(Xs - c, axis=1))
     return c, r if r > 0 else 0.1
 
-
 def fit_adpgbg(Xtr, ytr):
-    """ADPGBG。以最短异类距离为半径构建纯球，零参数"""
+    """ADPGBG。以最近异类距离为半径构建纯球，零参数"""
     X = Xtr.astype(np.float64)
     y = ytr.astype(np.int64)
     N = len(X)
@@ -655,7 +638,7 @@ def fit_adpgbg(Xtr, ytr):
             if h1 == np.inf:
                 continue
 
-            # 最短异类距离范围内的样本构成纯粒球
+            # 最近异类距离范围内的样本构成纯粒球
             dci = np.linalg.norm(X[dl] - X[ci], axis=1)
             Ti = [dl[i] for i in np.where(dci < h1 - 1e-12)[0]]
             if len(Ti) == 0:
@@ -694,9 +677,8 @@ def fit_adpgbg(Xtr, ytr):
             np.array([b['label'] for b in bi]),
             sizes)
 
-
 # ---------------------------------------------------------------------------
-# 7. GBG++：注意力驱动的快速稳定粒球生成
+# 7. GBG++：基于注意力机制的快速稳定粒球生成方法
 # ---------------------------------------------------------------------------
 
 def fit_gbgpp(Xtr, ytr):
