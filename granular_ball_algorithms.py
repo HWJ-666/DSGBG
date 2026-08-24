@@ -77,7 +77,7 @@ def fit_dsgbg(Xtr, ytr, sig_coef=5.0, pct_slope=15.0):
         Xc = X[y == c]
         if len(Xc) > 1:
             Dc = np.linalg.norm(Xc[:, None, :] - Xc[None, :, :], axis=2)
-            intra.append(Dc.mean() / (len(Xc) - 1))
+            intra.append(Dc[np.triu_indices(len(Xc), k=1)].mean())   # 类内样本对距离的均值（上三角，不含对角）
     intra_d = np.mean(intra) if intra else 0.0
 
     inter = []
@@ -117,7 +117,7 @@ def fit_dsgbg(Xtr, ytr, sig_coef=5.0, pct_slope=15.0):
         tri = np.triu_indices(Nc, k=1)
         all_d = Dc[tri]                                    # 类内成对距离集合
         cv_val = float(np.std(all_d) / max(np.mean(all_d), 1e-8))   # 变异系数
-        pct = min(5 + pct_slope * cv_val, 100.0)           # 自适应百分位
+        pct = 5 + pct_slope * cv_val                       # 自适应百分位
         dc_global = float(np.percentile(all_d, pct))       # 全局尺度
 
         alpha = lamb / (1.0 + cv_val)                      # 混合系数
