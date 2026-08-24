@@ -20,7 +20,7 @@ This repository provides the paper implementations of **DSGBG and 6 baseline gra
 | 6 | ADPGBG | `fit_adpgbg` | Adaptive generation based on shortest heterogeneous distance |
 | 7 | GBG++ | `fit_gbgpp` | Attention-driven fast and stable generation |
 
-All implementations use full pairwise distance computation — no sampling, no KDTree, no batched engineering optimization. Complexity is O(N²) as analyzed in the paper. Every `fit` returns `(centers, radii, labels, ball_sizes)`.
+Complexity is O(N²) as analyzed in the paper. Every `fit` returns `(centers, radii, labels, ball_sizes)`.
 
 ## Usage
 
@@ -64,7 +64,7 @@ Iris, Parkinsons, Seeds, Votes, Haberman, Ionosphere, Dermatology6, Chscase-vine
 ```bibtex
 @article{XXXX,
   title     = {DSGBG: Dual-Scale Granular Ball Generation Based on Dual-Scale Cut-off Distance and Inter-Class Separation},
-  author    = {Huang Wenjie and ...},
+  author    = {Huang Wenjie and Liu Xiaodi},
   journal   = {...},
   year      = {2026},
 }
