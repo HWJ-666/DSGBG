@@ -70,6 +70,3 @@ Iris, Parkinsons, Seeds, Votes, Haberman, Ionosphere, Dermatology6, Chscase-vine
 }
 ```
 
-## License
-
-This code will be made publicly available upon publication.
