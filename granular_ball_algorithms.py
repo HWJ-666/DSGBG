@@ -151,7 +151,7 @@ def fit_dsgbg(Xtr, ytr, sig_coef=5.0, pct_slope=15.0):
         for oi in order:
             if oi not in remaining:
                 continue
-            if has_noniso:
+            if has_noniso:   # 若类内所有样本均为孤立样本，则不执行该排除
                 nb0 = np.where(Dc[oi] <= r_star[oi])[0]
                 if len(nb0) <= 1:      # 邻域内仅含自身：标记为离群点候选
                     knn_i = np.sort(Dc[oi])
@@ -178,7 +178,7 @@ def fit_dsgbg(Xtr, ytr, sig_coef=5.0, pct_slope=15.0):
                 np.array([], dtype=y.dtype), np.array([]))
 
     # ---- 全局 kNN（供纠错补选与混合投票标签）----
-    k_nb = max(1, int(0.015 * len(X))) #与上述k近邻的k一致
+    k_nb = max(1, int(0.015 * len(X))) # 与上述k近邻的k一致
     k_nb = min(k_nb, len(X) - 1)
     DX = np.linalg.norm(X[:, None, :] - X[None, :, :], axis=2)
     np.fill_diagonal(DX, np.inf)
@@ -212,7 +212,7 @@ def fit_dsgbg(Xtr, ytr, sig_coef=5.0, pct_slope=15.0):
             continue
         all_c.append(X[gidx])
         al.append(c)
-        all_r.append(float(min(dc_c, hdist_o)))
+        all_r.append(float(min(dc_c, hdist_o))) # 恢复半径
         all_scores.append(score_o)
 
     centers = np.vstack(all_c)
