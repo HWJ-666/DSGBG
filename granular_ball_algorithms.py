@@ -104,8 +104,8 @@ def fit_dsgbg(Xtr, ytr, sig_coef=5.0, pct_slope=15.0):
         # ---- 双尺度截断距离 ----
         Dc = np.linalg.norm(Xc[:, None, :] - Xc[None, :, :], axis=2)
         knn = np.sort(Dc, axis=1)
-        k = max(1, int(0.015 * Nc))                        # 邻居数 K = 0.015·Nc
-        dc_local = max(float(np.median(knn[:, k])), 1e-8)  # 第K近邻距离中位数
+        k = max(1, int(0.015 * Nc))                        # 邻居数 k = 0.015·Nc
+        dc_local = max(float(np.median(knn[:, k])), 1e-8)  # 第k近邻距离中位数
 
         tri = np.triu_indices(Nc, k=1)
         all_d = Dc[tri]                                    # 类内成对距离集合
