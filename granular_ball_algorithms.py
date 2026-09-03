@@ -118,7 +118,7 @@ def fit_dsgbg(Xtr, ytr, sig_coef=5.0, pct_slope=15.0):
 
         # ---- 局部密度：邻居计数 + 高斯核加权 ----
         in_dc = Dc <= dc
-        dens = in_dc.sum(axis=1).astype(np.float64)
+        dens = in_dc.sum(axis=1).astype(np.float64)  # 与LDGBG一致计算
         for i in range(Nc):
             nb = np.where(in_dc[i])[0]
             nb = nb[nb != i]
@@ -178,7 +178,7 @@ def fit_dsgbg(Xtr, ytr, sig_coef=5.0, pct_slope=15.0):
                 np.array([], dtype=y.dtype), np.array([]))
 
     # ---- 全局 kNN（供纠错补选与混合投票标签）----
-    k_nb = max(1, int(0.015 * len(X)))
+    k_nb = max(1, int(0.015 * len(X))) #与上述k近邻的k一致
     k_nb = min(k_nb, len(X) - 1)
     DX = np.linalg.norm(X[:, None, :] - X[None, :, :], axis=2)
     np.fill_diagonal(DX, np.inf)
