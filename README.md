@@ -1,6 +1,6 @@
 # DSGBG: Dual-Scale Granular Ball Generation
 
-Source code for the paper *"DSGBG: Dual-Scale Granular Ball Generation Based on Dual-Scale Cut-off Distance and Inter-Class Separation"*.
+Source code for the paper *"DSGBG: An adaptive granular-ball generation method based on dual-scale cut-off distance and inter-class separation degree perception"*.
 
 ## Description
 
@@ -19,8 +19,6 @@ This repository provides the paper implementations of **DSGBG and 6 baseline gra
 | 5 | ACCGBG | `fit_accgbg` | K-division accelerated adaptive generation |
 | 6 | ADPGBG | `fit_adpgbg` | Adaptive generation based on shortest heterogeneous distance |
 | 7 | GBG++ | `fit_gbgpp` | Attention-driven fast and stable generation |
-
-Complexity is O(N²) as analyzed in the paper. Every `fit` returns `(centers, radii, labels, ball_sizes)`.
 
 ## Usage
 
@@ -53,20 +51,9 @@ pip install -r requirements.txt
 
 ## Datasets
 
-All experiments use 25 benchmark datasets from the [UCI Machine Learning Repository](https://archive.ics.uci.edu/) and LIBSVM:
-
-Iris, Parkinsons, Seeds, Votes, Haberman, Ionosphere, Dermatology6, Chscase-vine2, WDBC, Breastcancer, Austra, Diabetes, Vehicle3, Fourclass, credit-g, Yeast, Segment0, Image_segmentation, Svmguide1, Waveform, mushroom, Pen, Credit, Adult, Firewall.
+All experiments use 25 benchmark datasets collected from the [UCI Machine Learning Repository](https://archive.ics.uci.edu/) and [LIBSVM](https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/):
+Iris, Parkinsons, Seeds, Votes, Haberman, Ionosphere, Dermatology6, Chscase-vine2, WDBC, Breastcancer, Austra, Diabetes, Vehicle3, Fourclass, Credit-g, Yeast, Segment0, Image_segmentation, Svmguide1, Waveform, Mushroom, Pen, Credit, Adult, Firewall.
 
 **Preprocessing:** Min-max normalization; 5-times 5-fold stratified cross-validation. In noise experiments, 10%/20%/30%/40% label noise is injected into training labels (flipped equiprobably to other classes); test labels remain clean. Parameters are fixed at their clean-label optimal values across all noise levels.
 
-## Citation
-
-```bibtex
-@article{XXXX,
-  title     = {DSGBG: Dual-Scale Granular Ball Generation Based on Dual-Scale Cut-off Distance and Inter-Class Separation},
-  author    = {Huang Wenjie and Liu Xiaodi},
-  journal   = {...},
-  year      = {2026},
-}
-```
 
